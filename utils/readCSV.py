@@ -2,13 +2,12 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-from map_config import map_configs
-
-log_dir = 'C:\\Users\\James\\PycharmProjects\\MATraffic\\logs\\'
+import pandas
+log_dir = '/home/intelligent_traffic/RESCO/logs/'
 env_base = '..'+os.sep+'environments'+os.sep
 names = [folder for folder in next(os.walk(log_dir))[1]]
 
-metric = 'queue'
+metric = 'waitingTime2'
 output_file = 'avg_{}.py'.format(metric)
 run_avg = dict()
 
@@ -17,7 +16,7 @@ for name in names:
     print(split_name)
     map_name = split_name[2]
     average_per_episode = []
-    for i in range(1, 10000):
+    for i in range(1, 101):
         trip_file_name = log_dir+name + os.sep + 'metrics_'+str(i)+'.csv'
         if not os.path.exists(trip_file_name):
             print('No '+trip_file_name)
@@ -30,13 +29,13 @@ for name in names:
             reward, wait, steps = 0, 0, 0
             for line in fp:
                 line = line.split('}')
-                queues = line[2]
+                queues = line[0]
                 signals = queues.split(':')
                 step_total = 0
                 for s, signal in enumerate(signals):
                     if s == 0: continue
                     queue = signal.split(',')
-                    queue = int(queue[0])
+                    queue = float(queue[0])
                     step_total += queue
                 step_avg = step_total / len(signals)
                 total += step_avg
@@ -65,15 +64,18 @@ for run_name in run_avg:
     alg_name.append(run_name)
     alg_res.append(avg_delays)
 
-    alg_name.append(run_name+'_yerr')
-    alg_res.append(err)
+    # alg_name.append(run_name+'_yerr')
+    # alg_res.append(err)
 
     plt.title(run_name)
     plt.plot(avg_delays)
     plt.show()
+    plt.savefig("waitting.png")
 
 
 np.set_printoptions(threshold=sys.maxsize)
 with open(output_file, 'a') as out:
     for i, res in enumerate(alg_res):
+        df = pandas.DataFrame(res.tolist())
+        df.to_csv("{}.csv".format(alg_name[i]))
         out.write("'{}': {},\n".format(alg_name[i], res.tolist()))

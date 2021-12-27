@@ -40,6 +40,12 @@ class IDQN(IndependentAgent):
             )
 
             self.agents[key] = DQNAgent(config, act_space, model)
+    
+    def save(self, path):
+        metrics = {}
+        for k in self.agents.keys():
+            metrics[k] = self.agents[k].model.state_dict()
+        torch.save(metrics, path)
 
 
 class DQNAgent(Agent):

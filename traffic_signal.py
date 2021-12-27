@@ -25,7 +25,7 @@ def create_yellows(phases, yellow_length):
 
 
 class Signal:
-    def __init__(self, map_name, sumo, id, yellow_length, phases):
+    def __init__(self, map_name, sumo, id, yellow_length, phases, fixed=False):
         self.sumo = sumo
         self.id = id
         self.yellow_time = yellow_length
@@ -89,15 +89,16 @@ class Signal:
             self.generate_config()
 
         self.waiting_times = dict()     # SUMO's WaitingTime and AccumulatedWaiting are both wrong for multiple signals
-
+        self.fixed = fixed
         self.phases, self.yellow_dict = create_yellows(phases, yellow_length)
 
+        if fixed is False:
         # logic = self.sumo.trafficlight.Logic(id, 0, 0, phases=self.phases) # not compatible with libsumo
-        programs = self.sumo.trafficlight.getAllProgramLogics(self.id)
-        logic = programs[0]
-        logic.type = 0
-        logic.phases = self.phases
-        self.sumo.trafficlight.setProgramLogic(self.id, logic)
+            programs = self.sumo.trafficlight.getAllProgramLogics(self.id)
+            logic = programs[0]
+            logic.type = 0
+            logic.phases = self.phases
+            self.sumo.trafficlight.setProgramLogic(self.id, logic)
 
         self.signals = None     # Used to allow signal sharing
         self.full_observation = None

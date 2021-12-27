@@ -15,6 +15,7 @@ def main():
     ap.add_argument("--agent", type=str, default='STOCHASTIC',
                     choices=['STOCHASTIC', 'MAXWAVE', 'MAXPRESSURE', 'IDQN', 'IPPO', 'MPLight', 'MA2C', 'FMA2C',
                              'MPLightFULL', 'FMA2CFull', 'FMA2CVAL'])
+    ap.add_argument("--fixed", action='store_true')
     ap.add_argument("--trials", type=int, default=1)
     ap.add_argument("--eps", type=int, default=100)
     ap.add_argument("--procs", type=int, default=1)
@@ -77,7 +78,7 @@ def run_trial(args, trial):
                       route=route, step_length=map_config['step_length'], yellow_length=map_config['yellow_length'],
                       step_ratio=map_config['step_ratio'], end_time=map_config['end_time'],
                       max_distance=agt_config['max_distance'], lights=map_config['lights'], gui=args.gui,
-                      log_dir=args.log_dir, libsumo=args.libsumo, warmup=map_config['warmup'])
+                      log_dir=args.log_dir, libsumo=args.libsumo, warmup=map_config['warmup'], fixed=args.fixed)
 
     agt_config['episodes'] = int(args.eps * 0.8)    # schedulers decay over 80% of steps
     agt_config['steps'] = agt_config['episodes'] * num_steps_eps
@@ -97,6 +98,7 @@ def run_trial(args, trial):
             act = agent.act(obs)
             obs, rew, done, info = env.step(act)
             agent.observe(obs, rew, done, info)
+        agent.save(env.log_dir+env.connection_name+ os.sep + 'network_' + str(env.run) + '.pth')
     env.close()
 
 

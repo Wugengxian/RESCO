@@ -14,7 +14,7 @@ from traffic_signal import Signal
 class MultiSignal(gym.Env):
     def __init__(self, run_name, map_name, net, state_fn, reward_fn, route=None, gui=False, end_time=3600,
                  step_length=10, yellow_length=4, step_ratio=1, max_distance=200, lights=(), log_dir='/', libsumo=False,
-                 warmup=0):
+                 warmup=0, fixed=False):
         self.libsumo = libsumo
         print(map_name, net, state_fn.__name__, reward_fn.__name__)
         self.log_dir = log_dir
@@ -32,6 +32,7 @@ class MultiSignal(gym.Env):
         self.step_ratio = step_ratio
         self.connection_name = run_name + '-' + map_name + '---' + state_fn.__name__ + '-' + reward_fn.__name__
         self.map_name = map_name
+        self.fixed = fixed
 
         # Run some steps in the simulation with default light configurations to detect phases
         if self.route is not None:
@@ -78,7 +79,7 @@ class MultiSignal(gym.Env):
         # Pull signal observation shapes
         self.obs_shape = dict()
         for ts in self.all_ts_ids:
-            self.signals[ts] = Signal(self.map_name, self.sumo, ts, self.yellow_length, self.phases[ts])
+            self.signals[ts] = Signal(self.map_name, self.sumo, ts, self.yellow_length, self.phases[ts], fixed)
         for ts in self.all_ts_ids:
             self.signals[ts].signals = self.signals
             self.signals[ts].observe(self.step_length, self.max_distance)
@@ -155,15 +156,19 @@ class MultiSignal(gym.Env):
 
     def step(self, act):
         # Send actions to their signals
-        for signal in self.signals:
-            self.signals[signal].prep_phase(act[signal])
+        if self.fixed:
+            for step in range(self.step_length):
+                self.step_sim()
+        else:
+            for signal in self.signals:
+                self.signals[signal].prep_phase(act[signal])
 
-        for step in range(self.yellow_length):
-            self.step_sim()
-        for signal in self.signal_ids:
-            self.signals[signal].set_phase()
-        for step in range(self.step_length - self.yellow_length):
-            self.step_sim()
+            for step in range(self.yellow_length):
+                self.step_sim()
+            for signal in self.signal_ids:
+                self.signals[signal].set_phase()
+            for step in range(self.step_length - self.yellow_length):
+                self.step_sim()
         for signal in self.signal_ids:
             self.signals[signal].observe(self.step_length, self.max_distance)
 
