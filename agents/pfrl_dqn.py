@@ -38,6 +38,7 @@ class IDQN(IndependentAgent):
                 nn.Linear(64, act_space),
                 DiscreteActionValueHead()
             )
+            model.load_state_dict
 
             self.agents[key] = DQNAgent(config, act_space, model)
     
@@ -46,6 +47,10 @@ class IDQN(IndependentAgent):
         for k in self.agents.keys():
             metrics[k] = self.agents[k].model.state_dict()
         torch.save(metrics, path)
+
+    def load(self, path):
+        for k in self.agents.keys():
+            self.agents[k].model.load_state_dict(path[k])
 
 
 class DQNAgent(Agent):

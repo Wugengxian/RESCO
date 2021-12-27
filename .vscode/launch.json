@@ -23,7 +23,7 @@
             "args": ["--agent", "IDQN", 
                     "--map", "ingolstadt21",
                     "--libsumo", "True", "--fixed",
-                    "--log_dir", "./fixed_log"]
+                    "--log_dir", "./fixed_log/", "--eps", "1"]
         },
         {
             "name": "readcsv",
@@ -31,6 +31,17 @@
             "request": "launch",
             "program": "utils/readCSV.py",
             "console": "integratedTerminal", 
+        },
+        {
+            "name": "supportmodel",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal", 
+            "args": ["--agent", "IDQN", 
+                    "--map", "ingolstadt21",
+                    "--libsumo", "True",
+                    "--state_dict", "./logs/IDQN-tr0-ingolstadt21-21-drq_norm-wait_norm/network_100.pth"]
         }
     ]
 }

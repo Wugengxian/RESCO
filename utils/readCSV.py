@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import pandas
-log_dir = '/home/intelligent_traffic/RESCO/logs/'
+log_dir = '/home/intelligent_traffic/RESCO/fixed_log/'
 env_base = '..'+os.sep+'environments'+os.sep
 names = [folder for folder in next(os.walk(log_dir))[1]]
 
@@ -77,5 +77,4 @@ np.set_printoptions(threshold=sys.maxsize)
 with open(output_file, 'a') as out:
     for i, res in enumerate(alg_res):
         df = pandas.DataFrame(res.tolist())
-        df.to_csv("{}.csv".format(alg_name[i]))
-        out.write("'{}': {},\n".format(alg_name[i], res.tolist()))
+        df.to_csv("22.csv")

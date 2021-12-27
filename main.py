@@ -1,6 +1,7 @@
 import pathlib
 import os
 import multiprocessing as mp
+import torch
 
 
 from multi_signal import MultiSignal
@@ -28,6 +29,7 @@ def main():
     ap.add_argument("--gui", type=bool, default=False)
     ap.add_argument("--libsumo", type=bool, default=False)
     ap.add_argument("--tr", type=int, default=0)  # Can't multi-thread with libsumo, provide a trial number
+    ap.add_argument("--state_dict", type=str, default=None)
     args = ap.parse_args()
 
     if args.procs == 1 or args.libsumo:
@@ -90,14 +92,18 @@ def run_trial(args, trial):
     for key in env.obs_shape:
         obs_act[key] = [env.obs_shape[key], len(env.phases[key]) if key in env.phases else None]
     agent = alg(agt_config, obs_act, args.map, trial)
-
+    if args.state_dict is not None:
+        agent.load(torch.load(args.state_dict))
     for _ in range(args.eps):
         obs = env.reset()
         done = False
         while not done:
-            act = agent.act(obs)
-            obs, rew, done, info = env.step(act)
-            agent.observe(obs, rew, done, info)
+            if args.fixed:
+                obs, rew, done, info = env.step(None)
+            else:
+                act = agent.act(obs)
+                obs, rew, done, info = env.step(act)
+                agent.observe(obs, rew, done, info)
         agent.save(env.log_dir+env.connection_name+ os.sep + 'network_' + str(env.run) + '.pth')
     env.close()
 

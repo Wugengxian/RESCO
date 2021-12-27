@@ -177,8 +177,8 @@ class MultiSignal(gym.Env):
         rewards = self.reward_fn(self.signals)
 
         self.calc_metrics(rewards)
-
-        done = self.sumo.simulation.getTime() >= self.end_time
+        time = self.sumo.simulation.getTime()
+        done = time >= self.end_time
         return observations, rewards, done, {'eps': self.run}
 
     def calc_metrics(self, rewards):
